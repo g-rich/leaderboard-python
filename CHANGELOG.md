@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 3.8.0 (2018-01-23)
+
+* Updated for Python Redis 3
+* Removed support for < Python Redis 3
+
 ## 3.7.3 (2018-05-04)
 
 * Fix an edge case in the updated comparison for non-members

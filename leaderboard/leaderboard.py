@@ -1,5 +1,6 @@
 from __future__ import division
 
+import redis
 from redis import StrictRedis, Redis, ConnectionPool
 import math
 import sys
@@ -7,6 +8,10 @@ if sys.version_info.major == 3:
     from itertools import zip_longest
 else:
     from itertools import izip_longest as zip_longest
+
+
+if redis.__version__ < '3.0.0':
+    raise RuntimeError('Minimum Redis version is 3, you are running {}.'.format(redis.__version__))
 
 
 def grouper(n, iterable, fillvalue=None):
@@ -135,10 +140,9 @@ class Leaderboard(object):
         @param member_data [String] Optional member data.
         '''
         pipeline = self.redis_connection.pipeline()
-        if isinstance(self.redis_connection, Redis):
-            pipeline.zadd(leaderboard_name, {member: score})
-        else:
-            pipeline.zadd(leaderboard_name, {member: score})
+
+        pipeline.zadd(leaderboard_name, {member: score})
+
         if member_data:
             pipeline.hset(
                 self._member_data_key(leaderboard_name),
@@ -158,10 +162,9 @@ class Leaderboard(object):
         '''
         pipeline = self.redis_connection.pipeline()
         for leaderboard_name in leaderboards:
-            if isinstance(self.redis_connection, Redis):
-                pipeline.zadd(leaderboard_name, {member: score})
-            else:
-                pipeline.zadd(leaderboard_name, {member: score})
+
+            pipeline.zadd(leaderboard_name, {member: score})
+
             if member_data:
                 pipeline.hset(
                     self._member_data_key(leaderboard_name),
@@ -240,10 +243,9 @@ class Leaderboard(object):
         '''
         pipeline = self.redis_connection.pipeline()
         for member, score in grouper(2, members_and_scores):
-            if isinstance(self.redis_connection, Redis):
-                pipeline.zadd(leaderboard_name, {member: score})
-            else:
-                pipeline.zadd(leaderboard_name, {member: score})
+
+            pipeline.zadd(leaderboard_name, {member: score})
+
         pipeline.execute()
 
     def member_data_for(self, member):

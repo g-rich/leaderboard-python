@@ -59,12 +59,10 @@ class TieRankingLeaderboard(Leaderboard):
             total_members_at_previous_score = self.redis_connection.zrevrangebyscore(leaderboard_name, previous_score, previous_score)
 
         pipeline = self.redis_connection.pipeline()
-        if isinstance(self.redis_connection, Redis):
-            pipeline.zadd(leaderboard_name, {member: new_score})
-            pipeline.zadd(self._ties_leaderboard_key(leaderboard_name), {str(float(new_score)): new_score})
-        else:
-            pipeline.zadd(leaderboard_name, {member: new_score})
-            pipeline.zadd(self._ties_leaderboard_key(leaderboard_name), {str(float(new_score)): new_score})
+
+        pipeline.zadd(leaderboard_name, {member: new_score})
+        pipeline.zadd(self._ties_leaderboard_key(leaderboard_name), {str(float(new_score)): new_score})
+
         if member_data:
             pipeline.hset(
                 self._member_data_key(leaderboard_name),
@@ -91,14 +89,11 @@ class TieRankingLeaderboard(Leaderboard):
             member_score != score
 
         pipeline = self.redis_connection.pipeline()
-        if isinstance(self.redis_connection, Redis):
-            pipeline.zadd(leaderboard_name, {member: score})
-            pipeline.zadd(self._ties_leaderboard_key(leaderboard_name),
-                          {str(float(score)): score})
-        else:
-            pipeline.zadd(leaderboard_name, {member: score})
-            pipeline.zadd(self._ties_leaderboard_key(leaderboard_name),
-                          {str(float(score)): score})
+
+        pipeline.zadd(leaderboard_name, {member: score})
+        pipeline.zadd(self._ties_leaderboard_key(leaderboard_name),
+                        {str(float(score)): score})
+
         if can_delete_score:
             pipeline.zrem(self._ties_leaderboard_key(leaderboard_name),
                           str(float(member_score)))
