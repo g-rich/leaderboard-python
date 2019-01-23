@@ -60,11 +60,11 @@ class TieRankingLeaderboard(Leaderboard):
 
         pipeline = self.redis_connection.pipeline()
         if isinstance(self.redis_connection, Redis):
-            pipeline.zadd(leaderboard_name, member, new_score)
-            pipeline.zadd(self._ties_leaderboard_key(leaderboard_name), str(float(new_score)), new_score)
+            pipeline.zadd(leaderboard_name, {member: new_score})
+            pipeline.zadd(self._ties_leaderboard_key(leaderboard_name), {str(float(new_score)): new_score})
         else:
-            pipeline.zadd(leaderboard_name, new_score, member)
-            pipeline.zadd(self._ties_leaderboard_key(leaderboard_name), new_score, str(float(new_score)))
+            pipeline.zadd(leaderboard_name, {member: new_score})
+            pipeline.zadd(self._ties_leaderboard_key(leaderboard_name), {str(float(new_score)): new_score})
         if member_data:
             pipeline.hset(
                 self._member_data_key(leaderboard_name),
@@ -92,13 +92,13 @@ class TieRankingLeaderboard(Leaderboard):
 
         pipeline = self.redis_connection.pipeline()
         if isinstance(self.redis_connection, Redis):
-            pipeline.zadd(leaderboard_name, member, score)
+            pipeline.zadd(leaderboard_name, {member: score})
             pipeline.zadd(self._ties_leaderboard_key(leaderboard_name),
-                          str(float(score)), score)
+                          {str(float(score)): score})
         else:
-            pipeline.zadd(leaderboard_name, score, member)
+            pipeline.zadd(leaderboard_name, {member: score})
             pipeline.zadd(self._ties_leaderboard_key(leaderboard_name),
-                          score, str(float(score)))
+                          {str(float(score)): score})
         if can_delete_score:
             pipeline.zrem(self._ties_leaderboard_key(leaderboard_name),
                           str(float(member_score)))
@@ -106,7 +106,7 @@ class TieRankingLeaderboard(Leaderboard):
             pipeline.hset(
                 self._member_data_key(leaderboard_name),
                 member,
-                member_data)
+                str(member_data))
         pipeline.execute()
 
     def rank_member_across(
